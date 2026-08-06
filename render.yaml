@@ -1,0 +1,65 @@
+services:
+  - type: web
+    name: atlas-api
+    runtime: node
+    plan: starter
+    buildCommand: npm ci
+    startCommand: npm run start -w @atlas/api
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_SSL
+        value: "true"
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-5.6-terra
+      - key: DEFAULT_BUSINESS_ID
+        sync: false
+      - key: BUSINESS_TIMEZONE
+        value: America/Fortaleza
+
+  - type: web
+    name: atlas-whatsapp
+    runtime: node
+    plan: starter
+    buildCommand: npm ci
+    startCommand: npm run start -w @atlas/whatsapp
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: ATLAS_API_URL
+        fromService:
+          type: web
+          name: atlas-api
+          property: hostport
+      - key: EVOLUTION_API_URL
+        sync: false
+      - key: EVOLUTION_API_KEY
+        sync: false
+      - key: EVOLUTION_WEBHOOK_SECRET
+        sync: false
+      - key: EVOLUTION_INSTANCE_BUSINESS_MAP
+        sync: false
+
+  - type: web
+    name: atlas-dashboard
+    runtime: node
+    plan: starter
+    buildCommand: npm ci && npm run build -w @atlas/dashboard
+    startCommand: npm run start -w @atlas/dashboard
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: atlas-api
+          property: hostport
+      - key: DEFAULT_BUSINESS_ID
+        sync: false
